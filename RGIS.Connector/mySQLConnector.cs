@@ -14,24 +14,51 @@ namespace RGIS.Connector
         public mySQLConnector(string connectionString, string[][] columnNames, string[][] columnTypes)
         {
             connection = new MySqlConnection(connectionString);
-            OpenConnection();
-            CheckValidity(columnNames, columnTypes);
+            Logger.Logger.Log("Connection", "New Connection-String was accepted.", "");
+            if (OpenConnection())
+            {
+                try
+                {
+                    CheckValidity(columnNames, columnTypes);
+                }
+                catch (Exception ex)
+                {
+                    throw;
+                }
+            }
         }
 
         public bool CheckConnection()
         {
-            throw new NotImplementedException();
+            Logger.Logger.Debug("Connection", "Creating Command", "");
+            MySqlCommand command = connection.CreateCommand();
+            command.CommandText = "show status like 'Conn%';";
+            Logger.Logger.Debug("Connection", "Command: ", command.CommandText);
+            string result = command.ExecuteScalar().ToString();
+            Logger.Logger.Log("Connection", "Command executed", "");
+            CloseConnection();
+            if(result=="Connection_errors_accept")
+            {
+                Logger.Logger.Log("Connection", "Connection successfull", ">" + result + "< was returned");
+                return true;
+            }
+            Logger.Logger.Error("Connection", "Connection failed", "CheckConnection");
+            return false;
         }
 
         public bool OpenConnection()
         {
             try
             {
+                Logger.Logger.Log("Connection", "Establishing Connection", "");
                 connection.Open();
+                Logger.Logger.Log("Connection", "Connection opened", "");
                 if (!CheckConnection())
                 {
+                    Logger.Logger.Error("Connection", "Connection failed", "OpenConnection");
                     return false;
                 }
+                Logger.Logger.Log("Connection", "Connection succedded", "");
                 return true;
             }
             catch (MySqlException ex)
@@ -39,11 +66,11 @@ namespace RGIS.Connector
                 switch (ex.Number)
                 {
                     case 0:
-                        Console.WriteLine("Cannot connect to server. Contact administrator");
+                        Logger.Logger.Error("Connection", "Cannot connect to server. Contact administrator", "");
                         break;
 
                     case 1045:
-                        Console.WriteLine("Invalid username/password, please try again");
+                        Logger.Logger.Error("Connection", "Invalid username/password, please try again", "");
                         break;
                 }
                 return false;
@@ -54,19 +81,22 @@ namespace RGIS.Connector
         {
             try
             {
+                Logger.Logger.Log("Connection", "Closing Connection", "");
                 connection.Close();
+                Logger.Logger.Log("Connection", "Connection closed", "");
                 return true;
             }
             catch (MySqlException ex)
             {
-                Console.WriteLine(ex.Message);
+                Logger.Logger.Error("Connection", ex.Message, "");
                 return false;
             }
         }
 
         public bool CheckValidity(string[][] columnNames, string[][] columnTypes)
         {
-            throw new NotImplementedException();
+            Logger.Logger.Error("Not implemented", "CheckValidity", "");
+            return false;
         }
 
         public bool Insert()
