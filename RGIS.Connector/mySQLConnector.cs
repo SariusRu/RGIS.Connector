@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using RGIS.Logging;
+
 
 namespace RGIS.Connector
 {
@@ -14,7 +16,7 @@ namespace RGIS.Connector
         public mySQLConnector(string connectionString, string[][] columnNames, string[][] columnTypes)
         {
             connection = new MySqlConnection(connectionString);
-            Logger.Logger.Log("Connection", "New Connection-String was accepted.", "");
+            Logger.Log("Connection", "New Connection-String was accepted.", "");
             if (OpenConnection())
             {
                 try
@@ -30,19 +32,19 @@ namespace RGIS.Connector
 
         public bool CheckConnection()
         {
-            Logger.Logger.Debug("Connection", "Creating Command", "");
+            Logger.Debug("Connection", "Creating Command", "");
             MySqlCommand command = connection.CreateCommand();
             command.CommandText = "show status like 'Conn%';";
-            Logger.Logger.Debug("Connection", "Command: ", command.CommandText);
+            Logger.Debug("Connection", "Command: ", command.CommandText);
             string result = command.ExecuteScalar().ToString();
-            Logger.Logger.Log("Connection", "Command executed", "");
+            Logger.Log("Connection", "Command executed", "");
             CloseConnection();
             if(result=="Connection_errors_accept")
             {
-                Logger.Logger.Log("Connection", "Connection successfull", ">" + result + "< was returned");
+                Logger.Log("Connection", "Connection successfull", ">" + result + "< was returned");
                 return true;
             }
-            Logger.Logger.Error("Connection", "Connection failed", "CheckConnection");
+            Logger.Error("Connection", "Connection failed", "CheckConnection");
             return false;
         }
 
@@ -50,15 +52,15 @@ namespace RGIS.Connector
         {
             try
             {
-                Logger.Logger.Log("Connection", "Establishing Connection", "");
+                Logger.Log("Connection", "Establishing Connection", "");
                 connection.Open();
-                Logger.Logger.Log("Connection", "Connection opened", "");
+                Logger.Log("Connection", "Connection opened", "");
                 if (!CheckConnection())
                 {
-                    Logger.Logger.Error("Connection", "Connection failed", "OpenConnection");
+                    Logger.Error("Connection", "Connection failed", "OpenConnection");
                     return false;
                 }
-                Logger.Logger.Log("Connection", "Connection succedded", "");
+                Logger.Log("Connection", "Connection succedded", "");
                 return true;
             }
             catch (MySqlException ex)
@@ -66,11 +68,11 @@ namespace RGIS.Connector
                 switch (ex.Number)
                 {
                     case 0:
-                        Logger.Logger.Error("Connection", "Cannot connect to server. Contact administrator", "");
+                        Logger.Error("Connection", "Cannot connect to server. Contact administrator", "");
                         break;
 
                     case 1045:
-                        Logger.Logger.Error("Connection", "Invalid username/password, please try again", "");
+                        Logger.Error("Connection", "Invalid username/password, please try again", "");
                         break;
                 }
                 return false;
@@ -81,21 +83,21 @@ namespace RGIS.Connector
         {
             try
             {
-                Logger.Logger.Log("Connection", "Closing Connection", "");
+                Logger.Log("Connection", "Closing Connection", "");
                 connection.Close();
-                Logger.Logger.Log("Connection", "Connection closed", "");
+                Logger.Log("Connection", "Connection closed", "");
                 return true;
             }
             catch (MySqlException ex)
             {
-                Logger.Logger.Error("Connection", ex.Message, "");
+                Logger.Error("Connection", ex.Message, "");
                 return false;
             }
         }
 
         public bool CheckValidity(string[][] columnNames, string[][] columnTypes)
         {
-            Logger.Logger.Error("Not implemented", "CheckValidity", "");
+            Logger.Error("Not implemented", "CheckValidity", "");
             return false;
         }
 
